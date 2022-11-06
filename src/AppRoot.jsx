@@ -8,7 +8,7 @@ export default class Candles extends React.Component {
     super(props);
 
     this.sourseLst = {
-      OPEN: {text: "цена на момент открытия", key:"OPEN"},
+      OPEN: {text: "цена на момент открытия", key: "OPEN"},
       CLOSE: {text: "цена на момент закрытия", key: "CLOSE"},
       HIGH: {text: "максимальная цена", key: "HIGH"},
     };
@@ -30,7 +30,6 @@ export default class Candles extends React.Component {
       report: null,
       comment: "данные обновляются",
     }));
-    //fetch!!!
 
     fetch(`http://localhost:1234/candles/?startDt=${this.state.startDt.toISOString().slice(0, 10)}&endDt=${this.state.endDt.toISOString().slice(0, 10)}`)
       .then(res => res.json())
@@ -42,36 +41,41 @@ export default class Candles extends React.Component {
             comment: "данные получены",
           }));
         },
-        // Note: it's important to handle errors here
-        // instead of a catch() block so that we don't swallow
-        // exceptions from actual bugs in components.
         (error) => {
           this.setState((state, props) => ({
             isUpdating: false,
-            // report: result,
+            report: {},
             comment: "ошибка получения данных",
           }));
         }
-      )
-  }
-
-  onReportFetched() {
-    //fetched!!!
-    this.setState((state, props) => ({
-      isUpdating: false,
-      report: {},
-      comment: "данные получены",
-    }));
-
+      );
   }
 
   onClickBtnFillDB() {
 
     this.setState((state, props) => ({
       isUpdating: true,
-      comment: "данные запрошены у стороннего сервиса",
+      comment: "данные запрошены у стороннего сервиса...",
     }));
 
+    fetch(`http://localhost:1234/candles/filldb`, {method: 'POST'})
+      .then((res) => { 
+        return res.json();
+      })
+      .then(
+        (result) => {
+          this.setState((state, props) => ({
+            isUpdating: false,
+            comment: "данные получены",
+          }));
+        },
+        (error) => {
+          this.setState((state, props) => ({
+            isUpdating: false,
+            comment: "ошибка получения данных",
+          }));
+        }
+      );
   }
 
   onChangeSelectSource(e) {
@@ -89,18 +93,18 @@ export default class Candles extends React.Component {
   renderReport() {
     // {"id":1,"MTS":1667606400000,"OPEN":21165,"CLOSE":21337,"HIGH":21470,"LOW":21100,"VOLUME":1453.66566158,"createdAt":"2022-11-05T17:00:18.245Z","updatedAt":"2022-11-05T17:00:18.245Z"}
     //new Date(timestamp);
-    
+
     if (!this.state.report) {return null;}
-    
+
     const data = this.state.report.map((item) => {
       let record = {};
       record.name = new Date(item.MTS).toISOString().slice(0, 10);
       record.uv = item[this.state.sourceID];
       return (record);
     })
-    
+
     const renderLineChart = (
-      <LineChart width={window.innerWidth*0.9} height={400} data={data}>
+      <LineChart width={window.innerWidth * 0.9} height={400} data={data}>
         <Line type="monotone" dataKey="uv" stroke="#8884d8" />
         <XAxis dataKey="name" />
         <YAxis />
@@ -110,21 +114,21 @@ export default class Candles extends React.Component {
     return (renderLineChart);
   }
 
-  onChangeInputStart(e) { 
+  onChangeInputStart(e) {
     this.setState((state, props) => ({
       startDt: new Date(e.target.valueAsNumber),
       comment: `выбрана начальная дата ${e}`,
     }));
 
   }
-  
+
   onChangeInputEnd(e) {
     this.setState((state, props) => ({
       endDt: new Date(e.target.valueAsNumber),
       comment: `выбрана начальная дата ${e}`,
     }));
 
-   }
+  }
 
   render() {
     let spinner = null;
@@ -161,7 +165,7 @@ export default class Candles extends React.Component {
               <span className="input-group-text" id="inputGroup-sizing-sm">дата по</span>
               <input type="date" className="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm" defaultValue={this.state.endDt.toISOString().slice(0, 10)} onChange={this.onChangeInputEnd.bind(this)}></input>
             </div>
-            
+
           </div>
           <p></p>
           <button type="button" className="btn btn-primary btn-sm" onClick={this.onClickBtnUpdate.bind(this)}>Обновить данные</button>
