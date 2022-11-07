@@ -5,14 +5,14 @@ import 'bootstrap/dist/css/bootstrap.css';
 // import App from './App';
 // import reportWebVitals from './reportWebVitals';
 
-import Candles from './AppRoot'
+import Candles from './App'
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <Candles name="kokoko" />
+    <Candles />
   </React.StrictMode>
 );
 

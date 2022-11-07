@@ -1,16 +1,35 @@
 import React from 'react';
 
-import {LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip} from 'recharts';
+import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
 
-export default class Candles extends React.Component {
+type Props = {};
 
-  constructor(props) {
+type State = {
+  startDt: Date,
+  endDt: Date,
+  sourceID: string,
+  report: any,
+  isUpdating: boolean,
+  comment: string,
+};
+
+type sourseLst = {
+  OPEN: { text: string, key: string },
+  CLOSE: { text: string, key: string },
+  HIGH: { text: string, key: string },
+};
+
+export default class Candles extends React.Component<Props, State>  {
+
+  sourseLst: sourseLst;
+
+  constructor(props: Props) {
     super(props);
 
     this.sourseLst = {
-      OPEN: {text: "цена на момент открытия", key: "OPEN"},
-      CLOSE: {text: "цена на момент закрытия", key: "CLOSE"},
-      HIGH: {text: "максимальная цена", key: "HIGH"},
+      OPEN: { text: "цена на момент открытия", key: "OPEN" },
+      CLOSE: { text: "цена на момент закрытия", key: "CLOSE" },
+      HIGH: { text: "максимальная цена", key: "HIGH" },
     };
 
     this.state = {
@@ -23,7 +42,7 @@ export default class Candles extends React.Component {
     };
   }
 
-  onClickBtnUpdate(e) {
+  onClickBtnUpdate(e: any) {
 
     this.setState((state, props) => ({
       isUpdating: true,
@@ -44,7 +63,7 @@ export default class Candles extends React.Component {
         (error) => {
           this.setState((state, props) => ({
             isUpdating: false,
-            report: {},
+            report: null,
             comment: "ошибка получения данных",
           }));
         }
@@ -58,8 +77,8 @@ export default class Candles extends React.Component {
       comment: "данные запрошены у стороннего сервиса...",
     }));
 
-    fetch(`http://localhost:1234/candles/filldb`, {method: 'POST'})
-      .then((res) => { 
+    fetch(`http://localhost:1234/candles/filldb`, { method: 'POST' })
+      .then((res) => {
         return res.json();
       })
       .then(
@@ -78,26 +97,26 @@ export default class Candles extends React.Component {
       );
   }
 
-  onChangeSelectSource(e) {
+  onChangeSelectSource(e:any) {
     this.setState((state, props) => ({
       sourceID: e.target.value,
-      comment: `выбран тип данных ${this.sourseLst[e.target.value].text}`,
+      comment: `выбран тип данных ${this.sourseLst[e.target.value as keyof typeof this.sourseLst].text}`,
     }));
 
   }
 
   componentDidMount() {
-    this.onClickBtnUpdate();
+    this.onClickBtnUpdate({});
   }
 
   renderReport() {
     // {"id":1,"MTS":1667606400000,"OPEN":21165,"CLOSE":21337,"HIGH":21470,"LOW":21100,"VOLUME":1453.66566158,"createdAt":"2022-11-05T17:00:18.245Z","updatedAt":"2022-11-05T17:00:18.245Z"}
     //new Date(timestamp);
 
-    if (!this.state.report) {return null;}
+    if (!this.state.report) { return null; }
 
-    const data = this.state.report.map((item) => {
-      let record = {};
+    const data = this.state.report.map((item:any) => {
+      let record:any = {};
       record.name = new Date(item.MTS).toISOString().slice(0, 10);
       record.uv = item[this.state.sourceID];
       return (record);
@@ -114,7 +133,7 @@ export default class Candles extends React.Component {
     return (renderLineChart);
   }
 
-  onChangeInputStart(e) {
+  onChangeInputStart(e: any) {
     this.setState((state, props) => ({
       startDt: new Date(e.target.valueAsNumber),
       comment: `выбрана начальная дата ${e}`,
@@ -122,7 +141,7 @@ export default class Candles extends React.Component {
 
   }
 
-  onChangeInputEnd(e) {
+  onChangeInputEnd(e: any) {
     this.setState((state, props) => ({
       endDt: new Date(e.target.valueAsNumber),
       comment: `выбрана начальная дата ${e}`,
@@ -143,7 +162,7 @@ export default class Candles extends React.Component {
     }
 
     let optionTags = Object.keys(this.sourseLst).map((key) => {
-      return (<option key={key} value={key}>{this.sourseLst[key].text}</option>);
+      return (<option key={key} value={key}>{this.sourseLst[key as keyof typeof this.sourseLst].text}</option>);
     });
 
     let el =
